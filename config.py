@@ -1,8 +1,9 @@
 import tensorflow as tf
 def get_args():
 
-    tf.flags.DEFINE_string('data_path', '../ubuntu', 'Path to dataset. ')
-    
+    tf.flags.DEFINE_string('data_path', './data/ubuntu1', 'Path to dataset. ')
+    tf.flags.DEFINE_boolean('isdebug', False, 'Path to dataset.')
+
     tf.flags.DEFINE_boolean("auto_gpu", True, "Automatically select gpu")
     tf.flags.DEFINE_integer("num_threads", 4, "Dimensionality of embedding")
     tf.flags.DEFINE_integer("capacity", 15000, "Dimensionality of embedding")
@@ -14,10 +15,10 @@ def get_args():
     tf.flags.DEFINE_integer("num_layer", 7, "Number of stacked layers")
     tf.flags.DEFINE_boolean("init_dict", True, "use initial word2vec")
     tf.flags.DEFINE_integer("vocab_size", 5000000, "Size of vocabulary")
-    tf.flags.DEFINE_integer("max_turn", 10, "Max length of turn")
-    tf.flags.DEFINE_integer("max_utterance_len", 50, "Max length of word") 
+    tf.flags.DEFINE_integer("max_turn", 1, "Max length of turn")
+    tf.flags.DEFINE_integer("max_utterance_len", 20, "Max length of word")
 
-    tf.flags.DEFINE_integer("embed_dim", 200, "Dimensionality of embedding")
+    tf.flags.DEFINE_integer("embed_dim", 80, "Dimensionality of embedding")
     tf.flags.DEFINE_integer("hidden_dim", 200, "Dimensionality of rnn")
     tf.flags.DEFINE_float("dropout_keep_prob", 0.8, "Dropout keep probability") 
 
@@ -48,7 +49,7 @@ def get_args():
 
 
     # Misc Parameters
-    tf.flags.DEFINE_integer('gpu',10 , 'Which GPU to use')
+    tf.flags.DEFINE_integer('gpu',0 , 'Which GPU to use')
     tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
     tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
 

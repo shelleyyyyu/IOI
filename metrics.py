@@ -28,7 +28,10 @@ def recall_at_k(labels, scores, k=1, doc_num=10):
                 rel += 1
         recall += float(rel) / float(num_rel)
         count_nonzero += 1
-    return float(recall) / count_nonzero
+    if count_nonzero == 0:
+        return 0.0
+    else:
+        return float(recall) / count_nonzero
 
 
 def precision_at_k(labels, scores, k=1, doc_num=10):

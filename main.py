@@ -58,8 +58,12 @@ if __name__ == "__main__":
 
 
         with sess.as_default():
-            train_record_file = './%s/train.tfrecords'%(FLAGS.data_path)
-            valid_record_file = './%s/valid.tfrecords'%(FLAGS.data_path)
+            if FLAGS.isdebug:
+                train_record_file = './%s/train.small.tfrecords' % (FLAGS.data_path)
+                valid_record_file = './%s/valid.small.tfrecords' % (FLAGS.data_path)
+            else:
+                train_record_file = './%s/train.tfrecords'%(FLAGS.data_path)
+                valid_record_file = './%s/valid.tfrecords'%(FLAGS.data_path)
 
 
             parser = get_record_parser(FLAGS)
@@ -176,7 +180,8 @@ if __name__ == "__main__":
                 writer.add_summary(summary_MeanLoss, step)
                 writer.add_summary(summary_MeanAcc, step)
 
-                if ('ubuntu' in FLAGS.data_path): 
+                #if ('ubuntu' in FLAGS.data_path):
+                if True:
                     num_sample = int(len(pred_scores) / 10)
                     score_list = np.split(np.array(pred_scores), num_sample, axis=0)
                     recall_2_1 = recall_2at1(score_list, k=1)

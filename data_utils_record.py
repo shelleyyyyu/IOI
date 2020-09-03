@@ -1,4 +1,4 @@
-import os
+import os, sys
 import pickle
 from collections import defaultdict
 import logging
@@ -79,23 +79,25 @@ def load_file(input_file, word2idx_file, isshuffle = True):
     with open(input_file, 'r') as f: 
         for k, line in enumerate(f):
             parts = line.strip().split("\t")
-            label = parts[0]
-            context = parts[1:-1] # multi-turn
-            if len(context) > 10:
-                    context = context[-10:]
-
-            response = parts[-1]
+            label = parts[2]
+            #context = parts[1:-1] # multi-turn
+            #if len(context) > 10:
+            #        context = context[-10:]
+            context = [parts[0]]  # single-turn
+            response = parts[1]
             data = {"y": label, "c": context, "r": response}
+            #print(data)
+            #print('-'*100)
             revs.append(data)
             response_set.append(response)
     print("Processed dataset with %d context-response pairs " % (len(revs)))
     if isshuffle == True:
         shuffle(revs)
-
+    #print(word2idx)
     return revs, response_set, word2idx
 
 
-def get_word_idx_from_sent(sent, word_idx_map, max_word_len=50):
+def get_word_idx_from_sent(sent, word_idx_map, max_word_len=20):
     """
     Transforms sentence into a list of indices. Pad with zeroes.
     """
@@ -105,7 +107,7 @@ def get_word_idx_from_sent(sent, word_idx_map, max_word_len=50):
 
     return x, x_len
 
-def get_word_idx_from_sent_msg(sents, word_idx_map, max_turn=10, max_word_len=50):
+def get_word_idx_from_sent_msg(sents, word_idx_map, max_turn=1, max_word_len=20):
     word_turns = []
     word_lens = []
 
@@ -141,14 +143,18 @@ def get_word_idx_from_sent_msg(sents, word_idx_map, max_turn=10, max_word_len=50
 
 
 
-def build_records(data_file, word2idx_file, records_name, max_turn=10, max_utterance_len=50, isshuffle=False, max_mum=100000000):
+def build_records(data_file, word2idx_file, records_name, max_turn=1, max_utterance_len=20, isshuffle=False, max_mum=100000000):
     revs, response_set, word2idx= load_file(data_file, word2idx_file, isshuffle)
     print("load data done ...")
     writer = tf.python_io.TFRecordWriter(records_name)
     for k, rev in enumerate(revs):
         context, context_len, turn = get_word_idx_from_sent_msg(rev["c"], word2idx, max_turn, max_utterance_len)
         response, response_len = get_word_idx_from_sent(rev['r'], word2idx, max_utterance_len)
-        y_label = int(rev["y"]) 
+        y_label = int(rev["y"])
+        print(context)
+        print(response)
+        print(y_label)
+        print('-'*100)
         features = {
             'context': tf.train.Feature(bytes_list=tf.train.BytesList(value=[context.tostring()])),
             'context_len': tf.train.Feature(bytes_list=tf.train.BytesList(value=[context_len.tostring()])),
@@ -211,7 +217,7 @@ def process_word2vec(word2vec_file, emb_size,  total_words=10000000,  out_dict_f
     word_dict['<pad>'] = 0
     word_dict['<unk>'] = 1
 
-    with open(word2vec_file, 'r', encoding = "ISO-8859-1") as f:  
+    with open(word2vec_file, 'r', encoding="utf-8") as f:
         # there exits an useless line in word2vec 
         lines = f.readlines()[1:]  
         for i, line in enumerate(lines):
@@ -232,26 +238,25 @@ def process_word2vec(word2vec_file, emb_size,  total_words=10000000,  out_dict_f
 
 
 if __name__ == "__main__":
-    emb_size = 200
-    data_path = 'data/ubuntu'
-
-    process_word2vec(os.path.join(data_path, 'ubuntu.200d.word2vec'), \
+    emb_size = 80
+    data_path = sys.argv[1]
+    print(data_path)
+    process_word2vec('./data/jdqa/w2v_sgns_win1_d80.kv', \
                         emb_size, \
                         out_dict_file=os.path.join(data_path, 'word_dict.pkl'), \
                         out_emb_file=os.path.join(data_path, 'word_emb_matrix.pkl'))
-    
 
-    if 0:
+    if False:
         build_records(os.path.join(data_path, 'train.txt'), 
                         os.path.join(data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'train.small.tfrecords'), isshuffle=True, max_mum=20000)
+                        os.path.join(data_path, 'train.small.tfrecords'), isshuffle=True, max_mum=10000)
         build_records(os.path.join(data_path, 'valid.txt'), 
                         os.path.join(data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'valid.small.tfrecords'), max_mum=10000)
+                        os.path.join(data_path, 'valid.small.tfrecords'), max_mum=5000)
 
         build_records(os.path.join(data_path, 'test.txt'), 
                         os.path.join(data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'test.small.tfrecords'), max_mum=10000)
+                        os.path.join(data_path, 'test.small.tfrecords'), max_mum=5000)
     else:
         build_records(os.path.join(data_path, 'train.txt'), 
                         os.path.join(data_path, 'word_dict.pkl'),
