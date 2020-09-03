@@ -240,32 +240,34 @@ def process_word2vec(word2vec_file, emb_size,  total_words=10000000,  out_dict_f
 if __name__ == "__main__":
     emb_size = 80
     data_path = sys.argv[1]
+    w2v_data_path = sys.argv[2]
     print(data_path)
-    process_word2vec('./data/jdqa/w2v_sgns_win1_d80.kv', \
-                        emb_size, \
-                        out_dict_file=os.path.join(data_path, 'word_dict.pkl'), \
-                        out_emb_file=os.path.join(data_path, 'word_emb_matrix.pkl'))
+    print(w2v_data_path)
+    #process_word2vec('./data/jdqa/w2v_sgns_win1_d80.kv', \
+    #                    emb_size, \
+    #                    out_dict_file=os.path.join(data_path, 'word_dict.pkl'), \
+    #                    out_emb_file=os.path.join(data_path, 'word_emb_matrix.pkl'))
 
     if False:
         build_records(os.path.join(data_path, 'train.txt'), 
-                        os.path.join(data_path, 'word_dict.pkl'),
+                        os.path.join(w2v_data_path, 'word_dict.pkl'),
                         os.path.join(data_path, 'train.small.tfrecords'), isshuffle=True, max_mum=10000)
         build_records(os.path.join(data_path, 'valid.txt'), 
-                        os.path.join(data_path, 'word_dict.pkl'),
+                        os.path.join(w2v_data_path, 'word_dict.pkl'),
                         os.path.join(data_path, 'valid.small.tfrecords'), max_mum=5000)
 
         build_records(os.path.join(data_path, 'test.txt'), 
-                        os.path.join(data_path, 'word_dict.pkl'),
+                        os.path.join(w2v_data_path, 'word_dict.pkl'),
                         os.path.join(data_path, 'test.small.tfrecords'), max_mum=5000)
     else:
         build_records(os.path.join(data_path, 'train.txt'), 
-                        os.path.join(data_path, 'word_dict.pkl'),
+                        os.path.join(w2v_data_path, 'word_dict.pkl'),
                         os.path.join(data_path, 'train.tfrecords'), isshuffle=True)
         build_records(os.path.join(data_path, 'valid.txt'), 
-                        os.path.join(data_path, 'word_dict.pkl'),
+                        os.path.join(w2v_data_path, 'word_dict.pkl'),
                         os.path.join(data_path, 'valid.tfrecords'))
 
         build_records(os.path.join(data_path, 'test.txt'), 
-                        os.path.join(data_path, 'word_dict.pkl'),
+                        os.path.join(w2v_data_path, 'word_dict.pkl'),
                         os.path.join(data_path, 'test.tfrecords'))
 
