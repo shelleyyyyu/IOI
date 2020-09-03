@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
         # Load pretrained word embeddings
         print("Loading pretrained word embeddings ...")
-        init_embeddings_path = './%s/word_emb_matrix.pkl'%(FLAGS.data_path)
+        init_embeddings_path = './%s/word_emb_matrix.pkl'%(FLAGS.w2v_data_path)
         with open(init_embeddings_path, 'rb') as f:
             embeddings = np.array(pickle.load(f))
         FLAGS.vocab_size = embeddings.shape[0]

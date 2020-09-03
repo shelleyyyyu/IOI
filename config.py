@@ -2,6 +2,7 @@ import tensorflow as tf
 def get_args():
 
     tf.flags.DEFINE_string('data_path', './data/ubuntu1', 'Path to dataset. ')
+    tf.flags.DEFINE_string('w2v_data_path', './data/', 'Path to dataset. ')
     tf.flags.DEFINE_boolean('isdebug', False, 'Path to dataset.')
 
     tf.flags.DEFINE_boolean("auto_gpu", True, "Automatically select gpu")
