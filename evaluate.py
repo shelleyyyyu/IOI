@@ -100,6 +100,10 @@ if __name__ == "__main__":
 
                 MeanAcc = sum(acc) / len(acc)
                 MeanLoss = sum(losses) / len(losses)
+
+                with open(os.path.join(out_dir, 'result.txt'), 'w') as f:
+                    for score1, score2 in zip(pred_scores, ture_scores):
+                        f.writelines(str(score1) + '\t' + str(score2) + '\n')
                 
                 if ('ubuntu' in FLAGS.data_path): 
                     num_sample = int(len(pred_scores) / 10)
