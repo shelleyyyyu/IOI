@@ -180,49 +180,51 @@ if __name__ == "__main__":
                 writer.add_summary(summary_MeanLoss, step)
                 writer.add_summary(summary_MeanAcc, step)
 
+                return MeanLoss, MeanAcc
+
                 #if ('ubuntu' in FLAGS.data_path):
-                if True:
-                    num_sample = int(len(pred_scores) / 10)
-                    score_list = np.split(np.array(pred_scores), num_sample, axis=0)
-                    recall_2_1 = recall_2at1(score_list, k=1)
+                #if False:
+                    #num_sample = int(len(pred_scores) / 10)
+                    #score_list = np.split(np.array(pred_scores), num_sample, axis=0)
+                    #recall_2_1 = recall_2at1(score_list, k=1)
 
-                    recall_at_1 = recall_at_k(np.array(ture_scores),  np.array(pred_scores), 1) 
-                    recall_at_2 = recall_at_k(np.array(ture_scores),  np.array(pred_scores), 2)
-                    recall_at_5 = recall_at_k(np.array(ture_scores),  np.array(pred_scores), 5)
-                    time_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    print("**********************************")
-                    print("%s results.........."%(flag.title()))
-                    print('pred_scores: ', len(pred_scores))
-                    print("Step: %d \t| loss: %.3f \t| acc: %.3f \t|  %s" %(step, MeanLoss, MeanAcc, time_str))
-                    print("recall_2_1:  %.3f" % (recall_2_1))
-                    print("recall_at_1: %.3f" % (recall_at_1))
-                    print("recall_at_2: %.3f" % (recall_at_2))
-                    print("recall_at_5: %.3f" % (recall_at_5))
-                    print("**********************************")
+                    #recall_at_1 = recall_at_k(np.array(ture_scores),  np.array(pred_scores), 1)
+                    #recall_at_2 = recall_at_k(np.array(ture_scores),  np.array(pred_scores), 2)
+                    #recall_at_5 = recall_at_k(np.array(ture_scores),  np.array(pred_scores), 5)
+                    #time_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    #print("**********************************")
+                    #print("%s results.........."%(flag.title()))
+                    #print('pred_scores: ', len(pred_scores))
+                    #print("Step: %d \t| loss: %.3f \t| acc: %.3f \t|  %s" %(step, MeanLoss, MeanAcc, time_str))
+                    #print("recall_2_1:  %.3f" % (recall_2_1))
+                    #print("recall_at_1: %.3f" % (recall_at_1))
+                    #print("recall_at_2: %.3f" % (recall_at_2))
+                    #print("recall_at_5: %.3f" % (recall_at_5))
+                    #print("**********************************")
 
-                    summary_recall_2_1 = tf.Summary(value=[tf.Summary.Value(tag='%s/recall_2_1'%(flag), simple_value=recall_2_1)])
-                    summary_recall_at_1 = tf.Summary(value=[tf.Summary.Value(tag='%s/recall_at_1'%(flag), simple_value=recall_at_1)])
-                    summary_recall_at_2 = tf.Summary(value=[tf.Summary.Value(tag='%s/recall_at_2'%(flag), simple_value=recall_at_2)])
-                    summary_recall_at_5 = tf.Summary(value=[tf.Summary.Value(tag='%s/recall_at_5'%(flag), simple_value=recall_at_5)])                    
+                    #summary_recall_2_1 = tf.Summary(value=[tf.Summary.Value(tag='%s/recall_2_1'%(flag), simple_value=recall_2_1)])
+                    #summary_recall_at_1 = tf.Summary(value=[tf.Summary.Value(tag='%s/recall_at_1'%(flag), simple_value=recall_at_1)])
+                    #summary_recall_at_2 = tf.Summary(value=[tf.Summary.Value(tag='%s/recall_at_2'%(flag), simple_value=recall_at_2)])
+                    #summary_recall_at_5 = tf.Summary(value=[tf.Summary.Value(tag='%s/recall_at_5'%(flag), simple_value=recall_at_5)])
 
-                    writer.add_summary(summary_recall_2_1, step)
-                    writer.add_summary(summary_recall_at_1, step)
-                    writer.add_summary(summary_recall_at_2, step)
-                    writer.add_summary(summary_recall_at_5, step)
-                    return MeanLoss, recall_2_1+recall_at_1
-                
-            
-            optimal_metrics = 0.0
+                    #writer.add_summary(summary_recall_2_1, step)
+                    #writer.add_summary(summary_recall_at_1, step)
+                    #writer.add_summary(summary_recall_at_2, step)
+                    #writer.add_summary(summary_recall_at_5, step)
+                    #return MeanLoss, recall_2_1+recall_at_1
+
+
+            optimal_acc = 0.0
             optimal_step = 0
             for i in range(FLAGS.num_epochs):
                 train_step()
                 current_step = tf.train.global_step(sess, global_step)
                 if current_step % FLAGS.valid_every == 0:
-                    meanLoss, metrics = dev_step('dev', dev_summary_writer)
-                    if metrics > optimal_metrics:
-                        optimal_metrics = metrics
+                    meanLoss, meanAcc = dev_step('dev', dev_summary_writer)
+                    if meanAcc > optimal_acc:
+                        optimal_acc = meanAcc
                         optimal_step = current_step
-                        print("opt_step: %d \t| opt_metric: %.3f" %(optimal_step, optimal_metrics))
+                        print("opt_step: %d \t| opt_metric: %.3f" %(optimal_step, optimal_acc))
                         path = saver.save(sess, checkpoint_prefix, global_step=current_step)
                         print("Saved model checkpoint to {}\n".format(path))
 
