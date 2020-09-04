@@ -51,6 +51,9 @@ if __name__ == "__main__":
             embeddings = np.array(pickle.load(f))
         FLAGS.vocab_size = embeddings.shape[0]
 
+        word2idx_path = './%s/word_dict.pkl'%(FLAGS.w2v_data_path)
+        word2idx = pickle.load(open(word2idx_path, 'rb'))
+        idx2word = {value: key for key, value in word2idx.items()}
         with sess.as_default():
             test_record_file = './%s/test.tfrecords'%(FLAGS.data_path)
             parser = get_record_parser(FLAGS)
@@ -75,6 +78,8 @@ if __name__ == "__main__":
             def dev_step():
                 acc = []
                 losses = []
+                context_list = []
+                response_list = []
                 pred_scores = []
                 pred_labels = []
                 ture_labels = []
@@ -86,11 +91,13 @@ if __name__ == "__main__":
                             model.is_training:False,
                             model.dropout_keep_prob: 1.0
                         }
-                        step, loss, accuracy, y_pred, target = sess.run(
-                            [global_step, model.loss, model.accuracy, model.y_pred, model.target], feed_dict)
+                        context, response, step, loss, accuracy, y_pred, target = sess.run(
+                            [model.context, model.response, global_step, model.loss, model.accuracy, model.y_pred, model.target], feed_dict)
                         acc.append(accuracy)
                         losses.append(loss)
 
+                        context_list += list(context)
+                        response_list += list(response)
                         pred_scores += list(y_pred[:, 1])
                         pred_labels += list([0 if (scores[0] > scores[1]) else 1 for scores in y_pred])
                         ture_labels += list(target)
@@ -105,8 +112,10 @@ if __name__ == "__main__":
                 MeanLoss = sum(losses) / len(losses)
 
                 with open(os.path.join(out_dir, 'result.txt'), 'w') as f:
-                    for score1, score2, score3 in zip(pred_scores, pred_labels, ture_labels):
-                        f.writelines(str(score1) + '\t' + str(score2) + '\t' + str(score3) + '\n')
+                    for context, response, score1, score2, score3 in zip(context_list, response_list, pred_scores, pred_labels, ture_labels):
+                        context_str = ' '.join([idx2word[c]for c in context[0] if c != 0])
+                        response_str = ' '.join([idx2word[r] for r in response if r != 0])
+                        f.writelines(str(context_str) + '\t' + str(response_str) + '\t' + str(score1) + '\t' + str(score2) + '\t' + str(score3) + '\n')
                 print("MeanAcc: %.4f" %MeanAcc)
 
             dev_step()
