@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
         # Load pretrained word embeddings
         print("Loading pretrained word embeddings ...")
-        init_embeddings_path = './%s/word_emb_matrix.pkl'%(FLAGS.data_path)
+        init_embeddings_path = './%s/word_emb_matrix.pkl'%(FLAGS.w2v_data_path)
         with open(init_embeddings_path, 'rb') as f:
             embeddings = np.array(pickle.load(f))
         FLAGS.vocab_size = embeddings.shape[0]
@@ -68,15 +68,16 @@ if __name__ == "__main__":
 
             global_step = tf.Variable(0, name="global_step", trainable=False)
             saver = tf.train.Saver()
+            print(checkpoint_dir)
             print(tf.train.latest_checkpoint(checkpoint_dir))
-            
             saver.restore(sess, tf.train.latest_checkpoint(checkpoint_dir))
 
             def dev_step():
                 acc = []
                 losses = []
                 pred_scores = []
-                ture_scores = []
+                pred_labels = []
+                ture_labels = []
                 count = 0
                 while True:
                     try:
@@ -89,8 +90,10 @@ if __name__ == "__main__":
                             [global_step, model.loss, model.accuracy, model.y_pred, model.target], feed_dict)
                         acc.append(accuracy)
                         losses.append(loss)
+
                         pred_scores += list(y_pred[:, 1])
-                        ture_scores += list(target)
+                        pred_labels += list([0 if (scores[0] > scores[1]) else 1 for scores in y_pred])
+                        ture_labels += list(target)
 
                         count +=1
                         if count % 1000 == 0:
@@ -102,27 +105,9 @@ if __name__ == "__main__":
                 MeanLoss = sum(losses) / len(losses)
 
                 with open(os.path.join(out_dir, 'result.txt'), 'w') as f:
-                    for score1, score2 in zip(pred_scores, ture_scores):
-                        f.writelines(str(score1) + '\t' + str(score2) + '\n')
-                
-                if ('ubuntu' in FLAGS.data_path): 
-                    num_sample = int(len(pred_scores) / 10)
-                    score_list = np.split(np.array(pred_scores), num_sample, axis=0)
-                    recall_2_1 = recall_2at1(score_list, k=1)
-
-                    recall_at_1 = recall_at_k(np.array(ture_scores),  np.array(pred_scores), 1) 
-                    recall_at_2 = recall_at_k(np.array(ture_scores),  np.array(pred_scores), 2)
-                    recall_at_5 = recall_at_k(np.array(ture_scores),  np.array(pred_scores), 5)
-                    time_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    print("**********************************")
-                    print('pred_scores: ', len(pred_scores))
-                    print("Step: %d \t| loss: %.3f \t| acc: %.3f \t|  %s" %(step, MeanLoss, MeanAcc, time_str))
-                    print("recall_2_1:  %.3f" % (recall_2_1))
-                    print("recall_at_1: %.3f" % (recall_at_1))
-                    print("recall_at_2: %.3f" % (recall_at_2))
-                    print("recall_at_5: %.3f" % (recall_at_5))
-                    print("**********************************")
-                       
+                    for score1, score2, score3 in zip(pred_scores, pred_labels, ture_labels):
+                        f.writelines(str(score1) + '\t' + str(score2) + '\t' + str(score3) + '\n')
+                print("MeanAcc: %.4f" %MeanAcc)
 
             dev_step()
 
