@@ -115,6 +115,7 @@ if __name__ == "__main__":
                     for context, response, score1, score2, score3 in zip(context_list, response_list, pred_scores, pred_labels, ture_labels):
                         context_str = ' '.join([idx2word[c]for c in context[0] if c != 0])
                         response_str = ' '.join([idx2word[r] for r in response if r != 0])
+                        score1 = score1 / FLAGS.num_layer
                         f.writelines(str(context_str) + '\t' + str(response_str) + '\t' + str(score1) + '\t' + str(score2) + '\t' + str(score3) + '\n')
                 print("MeanAcc: %.4f" %MeanAcc)
 
