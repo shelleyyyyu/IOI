@@ -79,6 +79,8 @@ def load_file(input_file, word2idx_file, isshuffle = True):
     with open(input_file, 'r') as f: 
         for k, line in enumerate(f):
             parts = line.strip().split("\t")
+            if len(parts) != 3:
+                continue
             label = parts[2]
             #context = parts[1:-1] # multi-turn
             #if len(context) > 10:
@@ -151,10 +153,10 @@ def build_records(data_file, word2idx_file, records_name, max_turn=1, max_uttera
         context, context_len, turn = get_word_idx_from_sent_msg(rev["c"], word2idx, max_turn, max_utterance_len)
         response, response_len = get_word_idx_from_sent(rev['r'], word2idx, max_utterance_len)
         y_label = int(rev["y"])
-        print(context)
-        print(response)
-        print(y_label)
-        print('-'*100)
+        #print(context)
+        #print(response)
+        #print(y_label)
+        #print('-'*100)
         features = {
             'context': tf.train.Feature(bytes_list=tf.train.BytesList(value=[context.tostring()])),
             'context_len': tf.train.Feature(bytes_list=tf.train.BytesList(value=[context_len.tostring()])),
