@@ -20,13 +20,14 @@ for attr, value in sorted(FLAGS.__flags.items()):
     print("{}={}".format(attr.upper(), value))
 
 if __name__ == "__main__":
-    if FLAGS.auto_gpu:
+    '''if FLAGS.auto_gpu:
        index_of_gpu = get_available_gpu()
        FLAGS.gpu = 'gpu:' + str(index_of_gpu)
        print('Use GPU {}'.format(index_of_gpu))
     else:
        index_of_gpu = FLAGS.gpu
-    os.environ["CUDA_VISIBLE_DEVICES"] =str(index_of_gpu)
+    print('Use GPU {}'.format(index_of_gpu))
+    os.environ["CUDA_VISIBLE_DEVICES"] =str(index_of_gpu)'''
 
     # Output directory for models and summaries
     out_dir = os.path.abspath(os.path.join(os.path.curdir, FLAGS.log_root))
@@ -38,7 +39,7 @@ if __name__ == "__main__":
     if not os.path.exists(checkpoint_dir):
         os.makedirs(checkpoint_dir)
 
-    with tf.device("/%s" % FLAGS.gpu):
+    with tf.device("/gpu:0"):
         session_conf = tf.ConfigProto(
             allow_soft_placement=FLAGS.allow_soft_placement,
             log_device_placement=FLAGS.log_device_placement)
