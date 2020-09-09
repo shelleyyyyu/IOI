@@ -25,7 +25,7 @@ if __name__ == "__main__":
        FLAGS.gpu = 'gpu:' + str(index_of_gpu)
        print('Use GPU {}'.format(index_of_gpu))
     else:
-       index_of_gpu = 0
+       index_of_gpu = FLAGS.gpu
     os.environ["CUDA_VISIBLE_DEVICES"] =str(index_of_gpu)
 
     # Output directory for models and summaries
