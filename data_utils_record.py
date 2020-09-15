@@ -82,20 +82,14 @@ def load_file(input_file, word2idx_file, isshuffle = True):
             if len(parts) != 3:
                 continue
             label = parts[2]
-            #context = parts[1:-1] # multi-turn
-            #if len(context) > 10:
-            #        context = context[-10:]
             context = [parts[0]]  # single-turn
             response = parts[1]
             data = {"y": label, "c": context, "r": response}
-            #print(data)
-            #print('-'*100)
             revs.append(data)
             response_set.append(response)
     print("Processed dataset with %d context-response pairs " % (len(revs)))
     if isshuffle == True:
         shuffle(revs)
-    #print(word2idx)
     return revs, response_set, word2idx
 
 
@@ -133,15 +127,7 @@ def get_word_idx_from_sent_msg(sents, word_idx_map, max_turn=1, max_word_len=20)
         word_turns_new[:] = word_turns[len(word_turns)-max_turn:len(word_turns)]
         word_lens_new[:] = word_lens[len(word_turns)-max_turn:len(word_turns)]
 
-
-    # print("sents: ", sents)
-    # print("word_turns_new: ", word_turns_new)
-    # print("word_lens_new: ", word_lens_new)
-    # print("\n")
-    # time.sleep(20)
-
     return word_turns_new, word_lens_new, len(sents)
-
 
 
 
@@ -150,6 +136,8 @@ def build_records(data_file, word2idx_file, records_name, max_turn=1, max_uttera
     print("load data done ...")
     writer = tf.python_io.TFRecordWriter(records_name)
     for k, rev in enumerate(revs):
+        context_str = rev["c"]
+        response_str = rev["r"]
         context, context_len, turn = get_word_idx_from_sent_msg(rev["c"], word2idx, max_turn, max_utterance_len)
         response, response_len = get_word_idx_from_sent(rev['r'], word2idx, max_utterance_len)
         y_label = int(rev["y"])
@@ -159,9 +147,11 @@ def build_records(data_file, word2idx_file, records_name, max_turn=1, max_uttera
             print(y_label)
             print('-'*100)
         features = {
+            'context_str': tf.train.Feature(bytes_list=tf.train.BytesList(value=[context_str.tostring()])),
             'context': tf.train.Feature(bytes_list=tf.train.BytesList(value=[context.tostring()])),
             'context_len': tf.train.Feature(bytes_list=tf.train.BytesList(value=[context_len.tostring()])),
             'response': tf.train.Feature(bytes_list=tf.train.BytesList(value=[response.tostring()])),
+            'response_str': tf.train.Feature(bytes_list=tf.train.BytesList(value=[response_str.tostring()])),
             'response_len': tf.train.Feature(int64_list=tf.train.Int64List(value=[response_len])),
             'turn': tf.train.Feature(int64_list=tf.train.Int64List(value=[turn])),
             'y_label': tf.train.Feature(int64_list=tf.train.Int64List(value=[y_label]))   
@@ -244,37 +234,64 @@ if __name__ == "__main__":
     emb_size = 80
     data_path = sys.argv[1]
     w2v_data_path = sys.argv[2]
+    rst_data_path = sys.argv[3]
     print(data_path)
     print(w2v_data_path)
 
     if os.path.exists(os.path.join(w2v_data_path, 'word_dict.pkl')) and os.path.exists(os.path.join(w2v_data_path, 'word_emb_matrix.pkl')):
         print('no need to process')
     else:
-        process_word2vec('./data/jdqa/w2v_sgns_win1_d80.kv', \
-                            emb_size, \
-                            out_dict_file=os.path.join(w2v_data_path, 'word_dict.pkl'), \
-                            out_emb_file=os.path.join(w2v_data_path, 'word_emb_matrix.pkl'))
+        process_word2vec(os.path.join(w2v_data_path,'w2v_sgns_win1_d80.kv'), \
+                         emb_size, \
+                         out_dict_file=os.path.join(w2v_data_path, 'word_dict.pkl'), \
+                         out_emb_file=os.path.join(w2v_data_path, 'word_emb_matrix.pkl'))
 
     if False:
-        build_records(os.path.join(data_path, 'train.txt'), 
-                        os.path.join(w2v_data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'train.small.tfrecords'), isshuffle=True, max_mum=10000)
-        build_records(os.path.join(data_path, 'valid.txt'), 
-                        os.path.join(w2v_data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'valid.small.tfrecords'), max_mum=5000)
+        build_records(os.path.join(data_path, 'train.txt'),
+                      os.path.join(w2v_data_path, 'word_dict.pkl'),
+                      os.path.join(rst_data_path, 'train.tfrecords'), isshuffle=True, max_mum = 10000)
 
-        build_records(os.path.join(data_path, 'test.txt'), 
-                        os.path.join(w2v_data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'test.small.tfrecords'), max_mum=5000)
+        build_records(os.path.join(data_path, 'valid.txt'),
+                      os.path.join(w2v_data_path, 'word_dict.pkl'),
+                      os.path.join(rst_data_path, 'valid.tfrecords'), max_mum = 500)
+
+        build_records(os.path.join(data_path, 'test_a.txt'),
+                      os.path.join(w2v_data_path, 'word_dict.pkl'),
+                      os.path.join(rst_data_path, 'test.a.tfrecords'), max_mum = 500)
+
+        build_records(os.path.join(data_path, 'test_b.txt'),
+                      os.path.join(w2v_data_path, 'word_dict.pkl'),
+                      os.path.join(rst_data_path, 'test.b.tfrecords'), max_mum = 500)
+
+        build_records(os.path.join(data_path, 'annotate_a.txt'),
+                      os.path.join(w2v_data_path, 'word_dict.pkl'),
+                      os.path.join(rst_data_path, 'annotate.a.tfrecords'), max_mum = 10000)
+
+        build_records(os.path.join(data_path, 'annotate_b.txt'),
+                      os.path.join(w2v_data_path, 'word_dict.pkl'),
+                      os.path.join(rst_data_path, 'annotate.b.tfrecords'), max_mum = 10000)
     else:
         build_records(os.path.join(data_path, 'train.txt'), 
                         os.path.join(w2v_data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'train.tfrecords'), isshuffle=True)
-        build_records(os.path.join(data_path, 'valid.txt'), 
-                        os.path.join(w2v_data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'valid.tfrecords'))
+                        os.path.join(rst_data_path, 'train.tfrecords'), isshuffle=True)
 
-        build_records(os.path.join(data_path, 'test.txt'), 
+        build_records(os.path.join(data_path, 'valid.txt'),
                         os.path.join(w2v_data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'test.tfrecords'))
+                        os.path.join(rst_data_path, 'valid.tfrecords'))
+
+        build_records(os.path.join(data_path, 'test_a.txt'),
+                        os.path.join(w2v_data_path, 'word_dict.pkl'),
+                        os.path.join(rst_data_path, 'test.a.tfrecords'))
+
+        build_records(os.path.join(data_path, 'test_b.txt'),
+                      os.path.join(w2v_data_path, 'word_dict.pkl'),
+                      os.path.join(rst_data_path, 'test.b.tfrecords'))
+
+        build_records(os.path.join(data_path, 'annotate_a.txt'),
+                      os.path.join(w2v_data_path, 'word_dict.pkl'),
+                      os.path.join(rst_data_path, 'annotate.a.tfrecords'))
+
+        build_records(os.path.join(data_path, 'annotate_b.txt'),
+                      os.path.join(w2v_data_path, 'word_dict.pkl'),
+                      os.path.join(rst_data_path, 'annotate.b.tfrecords'))
 

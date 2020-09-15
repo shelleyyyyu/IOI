@@ -18,15 +18,6 @@ FLAGS = get_args()
 
 
 if __name__ == "__main__":
-
-    '''if FLAGS.auto_gpu:
-       index_of_gpu = get_available_gpu()
-       FLAGS.gpu = 'gpu:' + str(index_of_gpu)
-       print('Use GPU {}'.format(index_of_gpu))
-    else:
-       index_of_gpu = 0
-    os.environ["CUDA_VISIBLE_DEVICES"] =str(index_of_gpu)'''
-
     # Output directory for models and summaries
     out_dir = os.path.abspath(os.path.join(os.path.curdir, FLAGS.log_root))
     print("Writing to {}\n".format(out_dir))
@@ -55,7 +46,7 @@ if __name__ == "__main__":
         word2idx = pickle.load(open(word2idx_path, 'rb'))
         idx2word = {value: key for key, value in word2idx.items()}
         with sess.as_default():
-            test_record_file = './%s/test.tfrecords'%(FLAGS.data_path)
+            test_record_file = './%s'%(FLAGS.test_fname)
             parser = get_record_parser(FLAGS)
             test_dataset = get_batch_dataset(test_record_file, parser, FLAGS.batch_size, FLAGS.num_threads, FLAGS.capacity, True)
             test_iterator = test_dataset.make_initializable_iterator()
@@ -111,7 +102,7 @@ if __name__ == "__main__":
                 MeanAcc = sum(acc) / len(acc)
                 MeanLoss = sum(losses) / len(losses)
 
-                with open(os.path.join(out_dir, 'result.txt'), 'w') as f:
+                with open('%s'%(FLAGS.result_fname), 'w') as f:
                     for context, response, score1, score2, score3 in zip(context_list, response_list, pred_scores, pred_labels, ture_labels):
                         context_str = ' '.join([idx2word[c]for c in context[0] if c != 0])
                         response_str = ' '.join([idx2word[r] for r in response if r != 0])
