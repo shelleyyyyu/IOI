@@ -79,9 +79,9 @@ def load_file(input_file, word2idx_file, isshuffle = True):
     with open(input_file, 'r') as f: 
         for k, line in enumerate(f):
             parts = line.strip().split("\t")
-            if len(parts) != 3:
+            if len(parts) != 2:
                 continue
-            label = parts[2]
+            label = 0
             #context = parts[1:-1] # multi-turn
             #if len(context) > 10:
             #        context = context[-10:]
@@ -92,6 +92,8 @@ def load_file(input_file, word2idx_file, isshuffle = True):
             #print('-'*100)
             revs.append(data)
             response_set.append(response)
+            if((k+1)%10000==0):
+                print('load {} examples'.format(k+1))
     print("Processed dataset with %d context-response pairs " % (len(revs)))
     if isshuffle == True:
         shuffle(revs)
@@ -145,7 +147,7 @@ def get_word_idx_from_sent_msg(sents, word_idx_map, max_turn=1, max_word_len=20)
 
 
 
-def build_records(data_file, word2idx_file, records_name, max_turn=1, max_utterance_len=20, isshuffle=False, max_mum=100000000):
+def build_records(data_file, word2idx_file, records_name, max_turn=1, max_utterance_len=20, isshuffle=False):
     revs, response_set, word2idx= load_file(data_file, word2idx_file, isshuffle)
     print("load data done ...")
     writer = tf.python_io.TFRecordWriter(records_name)
@@ -174,8 +176,6 @@ def build_records(data_file, word2idx_file, records_name, max_turn=1, max_uttera
         writer.write(tf_serialized)
         if((k+1)%10000==0):
             print('Write {} examples to {}'.format(k+1, records_name))
-        if (k+1)>=max_mum:
-            break
     writer.close()
 
 def get_record_parser(FLAGS):
@@ -255,26 +255,7 @@ if __name__ == "__main__":
                             out_dict_file=os.path.join(w2v_data_path, 'word_dict.pkl'), \
                             out_emb_file=os.path.join(w2v_data_path, 'word_emb_matrix.pkl'))
 
-    if False:
-        build_records(os.path.join(data_path, 'train.txt'), 
-                        os.path.join(w2v_data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'train.small.tfrecords'), isshuffle=True, max_mum=10000)
-        build_records(os.path.join(data_path, 'valid.txt'), 
-                        os.path.join(w2v_data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'valid.small.tfrecords'), max_mum=5000)
-
-        build_records(os.path.join(data_path, 'test.txt'), 
-                        os.path.join(w2v_data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'test.small.tfrecords'), max_mum=5000)
-    else:
-        build_records(os.path.join(data_path, 'train.txt'), 
-                        os.path.join(w2v_data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'train.tfrecords'), isshuffle=True)
-        build_records(os.path.join(data_path, 'valid.txt'), 
-                        os.path.join(w2v_data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'valid.tfrecords'))
-
-        build_records(os.path.join(data_path, 'test.txt'), 
-                        os.path.join(w2v_data_path, 'word_dict.pkl'),
-                        os.path.join(data_path, 'test.tfrecords'))
+    build_records(os.path.join(data_path, 'set3.train.pos.seg'),
+                  os.path.join(w2v_data_path, 'word_dict.pkl'),
+                  os.path.join(data_path, 'test.tfrecords'))
 
