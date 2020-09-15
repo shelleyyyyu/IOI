@@ -11,7 +11,7 @@ def process(fname, fname_2, new_fname):
         #context_list, response_list, pred_scores, pred_labels, ture_labels
         context = origin_tmp[0]
         response = origin_tmp[1]
-        new_label = result_tmp[3]
+        new_label = result_tmp[-2]
         new_file.write(context+'\t'+response+'\t'+str(new_label)+'\n')
 
     result_file.close()
