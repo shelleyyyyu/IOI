@@ -25,7 +25,9 @@ def process(fname, fname_2, new_train_fname, new_valid_fname):
 
     result_file.close()
     origin_file.close()
-    new_file.close()
+    new_train_file.close()
+    new_valid_file.close()
+
 
 if __name__ == "__main__":
     result_file = sys.argv[1]
