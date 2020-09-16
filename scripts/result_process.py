@@ -18,7 +18,7 @@ def process(fname, fname_2, new_train_fname, new_valid_fname):
         context = origin_tmp[0]
         response = origin_tmp[1]
         new_label = result_tmp[-2]
-        if i <= train_data_cnt:
+        if i < train_data_cnt:
             new_train_file.write(context+'\t'+response+'\t'+str(new_label)+'\n')
         else:
             new_valid_file.write(context+'\t'+response+'\t'+str(new_label)+'\n')
