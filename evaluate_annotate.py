@@ -75,7 +75,7 @@ if __name__ == "__main__":
             print(tf.train.latest_checkpoint(checkpoint_dir))
             saver.restore(sess, tf.train.latest_checkpoint(checkpoint_dir))
 
-            start_time = time.time()
+
 
             def dev_step():
                 acc = []
@@ -86,6 +86,7 @@ if __name__ == "__main__":
                 pred_labels = []
                 ture_labels = []
                 count = 0
+                start_time = time.time()
                 while True:
                     try:
                         feed_dict = {
