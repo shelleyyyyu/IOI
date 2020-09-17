@@ -75,6 +75,8 @@ if __name__ == "__main__":
             print(tf.train.latest_checkpoint(checkpoint_dir))
             saver.restore(sess, tf.train.latest_checkpoint(checkpoint_dir))
 
+            start_time = time.time()
+
             def dev_step():
                 acc = []
                 losses = []
@@ -104,7 +106,10 @@ if __name__ == "__main__":
 
                         count +=1
                         if count % 100000 == 0:
+                            cur_time = time.time()
                             print(count)
+                            print('Spent: %d' %(cur_time-start_time))
+                            start_time = time.time()
                     except tf.errors.OutOfRangeError:
                         break
 
