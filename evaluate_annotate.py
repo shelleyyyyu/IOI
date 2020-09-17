@@ -103,7 +103,7 @@ if __name__ == "__main__":
                         ture_labels += list(target)
 
                         count +=1
-                        if count % 1000 == 0:
+                        if count % 100000 == 0:
                             print(count)
                     except tf.errors.OutOfRangeError:
                         break
