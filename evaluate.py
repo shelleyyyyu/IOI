@@ -114,7 +114,7 @@ if __name__ == "__main__":
                 MeanAcc = sum(acc) / len(acc)
                 MeanLoss = sum(losses) / len(losses)
 
-                with open(os.path.join(out_dir, 'result_train_set.txt'), 'w') as f:
+                with open(os.path.join(out_dir, 'result.txt'), 'w') as f:
                     for context, response, score1, score2, score3 in zip(context_list, response_list, pred_scores,
                                                                          pred_labels, ture_labels):
                         context_str = ' '.join([idx2word[c] for c in context[0] if c != 0])
